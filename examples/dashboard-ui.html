@@ -1,0 +1,104 @@
+<style>
+#ui{background:#080A0F;color:#E8EAF0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+#ui *{box-sizing:border-box}
+#ui aside{position:absolute;left:0;top:0;width:248px;height:1080px;background:#0A0D14;border-right:1px solid rgba(255,255,255,.07);padding:22px 16px;display:flex;flex-direction:column;gap:4px}
+#ui .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px;font-weight:600;font-size:16px;color:#F2F4F8}
+#ui .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#4C8DFF,#9B7BFF)}
+#ui .tagpro{margin-left:auto;font:500 10px ui-monospace,Menlo,monospace;color:#7A8196;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 5px}
+#ui .cap{font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.12em;color:#5E6578;padding:6px 10px}
+#ui .nav{display:flex;align-items:center;gap:12px;height:38px;padding:0 10px;border-radius:8px;color:#9AA1B2;font-size:14px}
+#ui .nav.on{background:rgba(76,141,255,.13);color:#fff;font-weight:500}
+#ui .nav i{width:13px;height:13px;border:1.5px solid currentColor;border-radius:3px}
+#ui .usage{margin-top:auto;padding:16px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:12px}
+#ui .usage .row{display:flex;justify-content:space-between;font-size:12px;color:#8A91A3;margin-bottom:6px}
+#ui .progress{height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+#ui .progress > div{height:100%;border-radius:3px;transform-origin:0 50%}
+#ui main{position:absolute;left:248px;top:0;width:1672px;height:1080px;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+#ui header{height:56px;flex:none;display:flex;align-items:center;gap:14px}
+#ui .crumb{font:400 12px ui-monospace,Menlo,monospace;color:#6B7285}
+#ui h1{margin:3px 0 0;font-size:22px;font-weight:600;letter-spacing:-.02em;color:#F4F6FA}
+#ui .search{width:340px;height:38px;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;padding:0 12px;color:#6B7285;font-size:13px}
+#ui .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#FF7A59,#FF5CA8);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#fff}
+#ui .chip{height:38px;padding:0 14px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;font-size:13px;color:#C9CEDA}
+#ui .grid4{display:flex;gap:20px;flex:none}
+#ui .card{position:relative;overflow:hidden;padding:18px 20px;border-radius:14px;background:rgba(18,22,32,.6);border:1px solid rgba(255,255,255,.07)}
+#ui .kpi{flex:1;height:150px}
+#ui .lbl{font-size:13px;color:#8A91A3}
+#ui .val{margin-top:8px;font-size:30px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#ui .delta{position:absolute;right:18px;top:16px;font:500 12px ui-monospace,Menlo,monospace;color:#4ADE9B;background:rgba(74,222,155,.1);border-radius:6px;padding:3px 7px}
+#ui .sub{margin-top:4px;font-size:12px;color:#6B7285}
+#ui .spark{position:absolute;left:20px;right:20px;bottom:14px;height:36px;width:calc(100% - 40px)}
+#ui .row2{display:flex;gap:20px;flex:none;height:390px}
+#ui .row3{display:flex;gap:20px;flex:1;min-height:0}
+#ui .ttl{font-size:15px;font-weight:600;color:#F2F4F8}
+#ui .legend{display:flex;gap:16px;margin-top:6px;font-size:12px;color:#8A91A3}
+#ui .legend b{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+#ui .bars{display:flex;align-items:flex-end;gap:14px;height:210px;margin-top:22px}
+#ui .bars .bar{flex:1;border-radius:4px 4px 1px 1px;transform-origin:50% 100%}
+#ui .months{display:flex;gap:14px;margin-top:8px;font:400 11px ui-monospace,Menlo,monospace;color:#6B7285}
+#ui .months span{flex:1;text-align:center}
+#ui .donut{display:flex;align-items:center;gap:28px;margin-top:20px}
+#ui .keys{display:flex;flex-direction:column;gap:14px;font-size:13px;color:#C9CEDA}
+#ui .keys b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px}
+#ui table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+#ui th{font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;color:#5E6578;text-align:left;padding:6px 0}
+#ui td{padding:9px 0;border-top:1px solid rgba(255,255,255,.05);color:#C9CEDA}
+#ui .st{font:500 11px ui-monospace,Menlo,monospace;border-radius:6px;padding:3px 8px}
+</style>
+<div id="ui">
+<aside data-b data-k="slide" data-s="2.0" data-sel>
+<div class="brand" data-b data-k="pop" data-s="2.7"><div class="logo"></div>Acme<span class="tagpro">PRO</span></div>
+<div class="cap">WORKSPACE</div>
+<div class="nav on" data-b data-k="slide" data-s="2.85"><i></i><span>Overview</span></div>
+<div class="nav" data-b data-k="slide" data-s="2.95"><i></i><span>Analytics</span></div>
+<div class="nav" data-b data-k="slide" data-s="3.05"><i></i><span>Revenue</span></div>
+<div class="nav" data-b data-k="slide" data-s="3.15"><i></i><span>Customers</span></div>
+<div class="nav" data-b data-k="slide" data-s="3.25"><i></i><span>Reports</span></div>
+<div class="cap" style="padding-top:18px">SETTINGS</div>
+<div class="nav" data-b data-k="slide" data-s="3.40"><i></i><span>Integrations</span></div>
+<div class="nav" data-b data-k="slide" data-s="3.50"><i></i><span>Team</span></div>
+<div class="usage" data-b data-k="pop" data-s="3.7" data-sel><div class="ttl" style="font-size:13px">Workspace usage</div>
+<div><div class="row"><span>Seats</span><span>36 / 50</span></div><div class="progress"><div data-b data-k="prog" data-s="10.4" style="width:72%;background:linear-gradient(90deg,#4C8DFF,#3DD6F5)"></div></div></div>
+<div><div class="row"><span>API calls</span><span>54%</span></div><div class="progress"><div data-b data-k="prog" data-s="10.7" style="width:54%;background:linear-gradient(90deg,#9B7BFF,#4C8DFF)"></div></div></div>
+</div></aside>
+<main>
+<header data-b data-k="slide" data-s="2.4" data-sel><div><div class="crumb">Analytics / Overview</div><h1>Revenue overview</h1></div><div style="flex:1"></div>
+<div class="search" data-b data-k="pop" data-s="3.1">Search metrics, customers…<span style="margin-left:auto;border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:2px 6px;font:500 11px ui-monospace,monospace">⌘K</span></div>
+<div class="chip" data-b data-k="pop" data-s="3.30">7D</div>
+<div class="chip" data-b data-k="pop" data-s="3.38">30D</div>
+<div class="chip" data-b data-k="pop" data-s="3.46">90D</div>
+<div class="avatar" data-b data-k="pop" data-s="3.6">MR</div></header>
+<div class="grid4">
+<div class="card kpi" data-b data-k="rise" data-s="3.90" data-sel><div class="lbl">Revenue</div><div class="val" data-count="1284560" data-dec="0" data-pre="$" data-suf="">$1284560</div><div class="delta" data-b data-k="pop" data-s="5.60">+12.4%</div><div class="sub">vs. $1.14M last period</div><svg class="spark" viewBox="0 0 347 36" preserveAspectRatio="none"><path data-b data-k="line" data-s="6.00" d="M0.0,34 C7.2,33.3 28.9,30.3 43.4,30 C57.8,29.7 72.3,33.0 86.8,32 C101.2,31.0 115.7,25.0 130.1,24 C144.6,23.0 159.0,27.0 173.5,26 C188.0,25.0 202.4,19.0 216.9,18 C231.3,17.0 245.8,21.0 260.2,20 C274.7,19.0 289.2,14.0 303.6,12 C318.1,10.0 339.8,8.7 347.0,8" fill="none" stroke="#4C8DFF" stroke-width="2" stroke-linecap="round"/></svg></div>
+<div class="card kpi" data-b data-k="rise" data-s="4.20" data-sel data-ax="12" data-ay="0" data-at="9.0"><div class="lbl">Active users</div><div class="val" data-count="48219" data-dec="0" data-pre="" data-suf="">48219</div><div class="delta" data-b data-k="pop" data-s="5.72">+8.1%</div><div class="sub">3,612 new this period</div><svg class="spark" viewBox="0 0 347 36" preserveAspectRatio="none"><path data-b data-k="line" data-s="6.25" d="M0.0,30 C7.2,30.3 28.9,32.7 43.4,32 C57.8,31.3 72.3,26.7 86.8,26 C101.2,25.3 115.7,28.7 130.1,28 C144.6,27.3 159.0,23.3 173.5,22 C188.0,20.7 202.4,21.0 216.9,20 C231.3,19.0 245.8,16.3 260.2,16 C274.7,15.7 289.2,19.0 303.6,18 C318.1,17.0 339.8,11.3 347.0,10" fill="none" stroke="#9B7BFF" stroke-width="2" stroke-linecap="round"/></svg></div>
+<div class="card kpi" data-b data-k="rise" data-s="4.50" data-sel data-ax="0" data-ay="12" data-at="9.4"><div class="lbl">Conversion</div><div class="val" data-count="3.62" data-dec="2" data-pre="" data-suf="%">3.62%</div><div class="delta" data-b data-k="pop" data-s="5.84">+0.4 pp</div><div class="sub">Trial → paid, 30 days</div><svg class="spark" viewBox="0 0 347 36" preserveAspectRatio="none"><path data-b data-k="line" data-s="6.50" d="M0.0,26 C7.2,26.3 28.9,28.3 43.4,28 C57.8,27.7 72.3,24.3 86.8,24 C101.2,23.7 115.7,26.7 130.1,26 C144.6,25.3 159.0,20.7 173.5,20 C188.0,19.3 202.4,22.3 216.9,22 C231.3,21.7 245.8,19.0 260.2,18 C274.7,17.0 289.2,16.7 303.6,16 C318.1,15.3 339.8,14.3 347.0,14" fill="none" stroke="#3DD6F5" stroke-width="2" stroke-linecap="round"/></svg></div>
+<div class="card kpi" data-b data-k="rise" data-s="4.80" data-sel data-ax="0" data-ay="-10" data-at="10.2"><div class="lbl">Growth</div><div class="val" data-count="23.8" data-dec="1" data-pre="" data-suf="%">23.8%</div><div class="delta" data-b data-k="pop" data-s="5.96">+5.2%</div><div class="sub">Quarter over quarter</div><svg class="spark" viewBox="0 0 347 36" preserveAspectRatio="none"><path data-b data-k="line" data-s="6.75" d="M0.0,36 C7.2,35.0 28.9,31.3 43.4,30 C57.8,28.7 72.3,29.3 86.8,28 C101.2,26.7 115.7,22.7 130.1,22 C144.6,21.3 159.0,25.0 173.5,24 C188.0,23.0 202.4,18.0 216.9,16 C231.3,14.0 245.8,13.0 260.2,12 C274.7,11.0 289.2,11.0 303.6,10 C318.1,9.0 339.8,6.7 347.0,6" fill="none" stroke="#FF5CA8" stroke-width="2" stroke-linecap="round"/></svg></div>
+</div>
+<div class="row2">
+<div class="card" style="width:1000px" data-b data-k="rise" data-s="4.9" data-sel><div class="ttl">Revenue</div><div class="legend"><span><b style="background:#4C8DFF"></b>This period</span><span><b style="background:#6B7285"></b>Previous period</span></div><svg viewBox="0 0 1000 220" width="960" height="250" style="margin-top:16px;overflow:visible"><path data-b data-k="line" data-s="7.0" d="M0.0,184 C10.7,183.0 42.7,178.7 64.0,178 C85.3,177.3 106.7,181.3 128.0,180 C149.3,178.7 170.7,171.3 192.0,170 C213.3,168.7 234.7,173.3 256.0,172 C277.3,170.7 298.7,164.0 320.0,162 C341.3,160.0 362.7,161.7 384.0,160 C405.3,158.3 426.7,153.0 448.0,152 C469.3,151.0 490.7,155.0 512.0,154 C533.3,153.0 554.7,148.3 576.0,146 C597.3,143.7 618.7,141.3 640.0,140 C661.3,138.7 682.7,139.7 704.0,138 C725.3,136.3 746.7,131.7 768.0,130 C789.3,128.3 810.7,129.3 832.0,128 C853.3,126.7 874.7,124.0 896.0,122 C917.3,120.0 949.3,117.0 960.0,116" fill="none" stroke="#6B7285" stroke-width="2" stroke-linecap="round" opacity=".7"/><path data-b data-k="line" data-s="6.6" d="M0.0,168 C10.7,166.7 42.7,160.7 64.0,160 C85.3,159.3 106.7,167.0 128.0,164 C149.3,161.0 170.7,144.7 192.0,142 C213.3,139.3 234.7,150.0 256.0,148 C277.3,146.0 298.7,135.0 320.0,130 C341.3,125.0 362.7,118.7 384.0,118 C405.3,117.3 426.7,128.3 448.0,126 C469.3,123.7 490.7,108.7 512.0,104 C533.3,99.3 554.7,98.3 576.0,98 C597.3,97.7 618.7,104.3 640.0,102 C661.3,99.7 682.7,88.7 704.0,84 C725.3,79.3 746.7,76.3 768.0,74 C789.3,71.7 810.7,73.0 832.0,70 C853.3,67.0 874.7,61.0 896.0,56 C917.3,51.0 949.3,42.7 960.0,40" fill="none" stroke="#4C8DFF" stroke-width="3" stroke-linecap="round"/></svg></div>
+<div class="card" style="flex:1" data-b data-k="rise" data-s="5.2" data-sel><div class="ttl">Revenue by plan</div><div class="donut"><svg viewBox="0 0 180 180" width="200" height="200"><circle cx="90" cy="90" r="68" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="18"/><circle data-b data-k="arc" data-len="42" data-s="6.4" cx="90" cy="90" r="68" fill="none" stroke="#4C8DFF" stroke-width="18" transform="rotate(-90 90 90)" style="stroke-dasharray:0 100;stroke-dashoffset:0"/><circle data-b data-k="arc" data-len="28" data-s="6.7" cx="90" cy="90" r="68" fill="none" stroke="#9B7BFF" stroke-width="18" transform="rotate(-90 90 90)" style="stroke-dasharray:0 100;stroke-dashoffset:-42"/><circle data-b data-k="arc" data-len="18" data-s="7.0" cx="90" cy="90" r="68" fill="none" stroke="#3DD6F5" stroke-width="18" transform="rotate(-90 90 90)" style="stroke-dasharray:0 100;stroke-dashoffset:-70"/></svg><div class="keys"><div><b style="background:#4C8DFF"></b>Enterprise 42%</div><div><b style="background:#9B7BFF"></b>Pro 28%</div><div><b style="background:#3DD6F5"></b>Starter 18%</div><div><b style="background:#27304A"></b>Other 12%</div></div></div></div>
+</div>
+<div class="row3">
+<div class="card" style="width:800px" data-b data-k="rise" data-s="5.5" data-sel><div class="ttl">Monthly active usage</div><div class="bars">
+<div class="bar" data-b data-k="bar" data-s="7.20" style="height:42%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="7.29" style="height:55%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="7.38" style="height:48%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="7.47" style="height:62%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="7.56" style="height:58%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="7.65" style="height:70%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="7.74" style="height:66%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="7.83" style="height:78%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="7.92" style="height:74%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="8.01" style="height:85%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="8.10" style="height:80%;background:rgba(76,141,255,.32)"></div>
+<div class="bar" data-b data-k="bar" data-s="8.19" style="height:94%;background:linear-gradient(180deg,#3DD6F5,#4C8DFF)"></div>
+</div><div class="months"><span>D</span><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span></div></div>
+<div class="card" style="flex:1" data-b data-k="rise" data-s="5.8" data-sel><div class="ttl">Recent transactions</div><table><tr><th>CUSTOMER</th><th>PLAN</th><th>DATE</th><th>AMOUNT</th><th>STATUS</th></tr>
+<tr data-b data-k="fade" data-s="8.40"><td>Acme Robotics</td><td>Enterprise</td><td>Nov 4</td><td>$12,400</td><td><span class="st" style="color:#4ADE9B;background:rgba(74,222,155,.1)">Paid</span></td></tr>
+<tr data-b data-k="fade" data-s="8.56"><td>Lumen Health</td><td>Pro</td><td>Nov 4</td><td>$3,180</td><td><span class="st" style="color:#4ADE9B;background:rgba(74,222,155,.1)">Paid</span></td></tr>
+<tr data-b data-k="fade" data-s="8.72"><td>Orbital Freight</td><td>Enterprise</td><td>Nov 3</td><td>$9,850</td><td><span class="st" style="color:#FFB547;background:rgba(255,181,71,.1)">Pending</span></td></tr>
+<tr data-b data-k="fade" data-s="8.88"><td>Kestrel Labs</td><td>Starter</td><td>Nov 3</td><td>$490</td><td><span class="st" style="color:#4ADE9B;background:rgba(74,222,155,.1)">Paid</span></td></tr>
+<tr data-b data-k="fade" data-s="9.04"><td>Vanta Mobility</td><td>Pro</td><td>Nov 2</td><td>$2,760</td><td><span class="st" style="color:#9AA1B2;background:rgba(255,255,255,.06)">Refunded</span></td></tr>
+<tr data-b data-k="fade" data-s="9.20"><td>Meridian Bank</td><td>Enterprise</td><td>Nov 2</td><td>$18,200</td><td><span class="st" style="color:#4ADE9B;background:rgba(74,222,155,.1)">Paid</span></td></tr>
+</table></div>
+</div></main></div>

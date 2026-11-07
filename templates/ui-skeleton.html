@@ -1,0 +1,59 @@
+<!-- ui-skeleton.html — punto de partida para una UI nueva (lienzo 1920×1080).
+     Se pasa a:  python3 scripts/build.py --ui mi_ui.html --out animacion.html
+
+     Hoja de atributos
+       data-b                      pieza que un cursor construye
+       data-k  slide|rise|pop      cajas  ·  line|bar|prog|arc|fade  gráficos
+       data-s  2.4                 orden (menor = antes)
+       data-ax/data-ay + data-at   nace desplazada y un cursor la corrige en ese segundo
+       data-sel                    manijas + guías al soltar
+       data-len                    (arc) longitud 0–100
+       data-count/-pre/-suf/-dec   contador animado
+     No pongas "transform" propio en elementos data-b. -->
+<style>
+  #ui { background:#080A0F; color:#E8EAF0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif }
+  #ui * { box-sizing:border-box }
+  #ui aside  { position:absolute; left:0; top:0; width:248px; height:1080px; background:#0A0D14; padding:22px 16px }
+  #ui main   { position:absolute; left:248px; top:0; width:1672px; height:1080px; padding:24px 32px; display:flex; flex-direction:column; gap:20px }
+  #ui header { height:56px; display:flex; align-items:center; gap:14px }
+  #ui .card  { padding:18px 20px; border-radius:14px; background:rgba(18,22,32,.6); border:1px solid rgba(255,255,255,.07) }
+  #ui .row   { display:flex; gap:20px }
+</style>
+
+<div id="ui">
+  <!-- 1 · Estructura (≈2.0–3.7 s) -->
+  <aside data-b data-k="slide" data-s="2.0" data-sel>
+    <div data-b data-k="pop" data-s="2.7">Mi marca</div>
+    <div data-b data-k="slide" data-s="2.85">Inicio</div>
+    <div data-b data-k="slide" data-s="2.95">Reportes</div>
+  </aside>
+
+  <main>
+    <header data-b data-k="slide" data-s="2.4" data-sel>
+      <h1 style="margin:0;font-size:22px">Título de la pantalla</h1>
+      <span style="flex:1"></span>
+      <div data-b data-k="pop" data-s="3.3">7D</div>
+    </header>
+
+    <!-- 2 · Ensamblaje (≈3.8–8 s) -->
+    <div class="row">
+      <div class="card" style="flex:1;height:150px" data-b data-k="rise" data-s="3.9" data-sel>
+        Ingresos
+        <div style="font-size:30px;font-weight:600" data-count="1284560" data-pre="$">$1,284,560</div>
+      </div>
+      <!-- esta tarjeta nace 12 px a la derecha y un cursor la corrige en el segundo 9.0 -->
+      <div class="card" style="flex:1;height:150px" data-b data-k="rise" data-s="4.2" data-sel data-ax="12" data-at="9.0">
+        Usuarios
+        <div style="font-size:30px;font-weight:600" data-count="48219">48,219</div>
+      </div>
+    </div>
+
+    <div class="card" style="height:320px" data-b data-k="rise" data-s="5.0" data-sel>
+      Tendencia
+      <svg viewBox="0 0 600 200" width="100%" height="240">
+        <path data-b data-k="line" data-s="6.6" d="M0,160 C100,140 200,150 300,90 S500,40 600,30"
+              fill="none" stroke="#4C8DFF" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </main>
+</div>

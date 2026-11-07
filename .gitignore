@@ -1,0 +1,5 @@
+node_modules/
+frames/
+*.mp4
+.DS_Store
+__pycache__/
