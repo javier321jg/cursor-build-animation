@@ -4,9 +4,9 @@ Skill que convierte una interfaz HTML en una animación de cursores colaborativo
 
 ## Demo
 
-[![Animación de ocho cursores construyendo un dashboard de ventas](docs/preview.gif)](https://javier321jg.github.io/cursor-build-animation/)
+[![Animación de ocho cursores construyendo un dashboard de ventas](https://javier321jg.github.io/cursor-build-animation/preview.gif)](https://javier321jg.github.io/cursor-build-animation/)
 
-**[Abrir el demo interactivo](https://javier321jg.github.io/cursor-build-animation/)** · [Ver el HTML del demo](docs/index.html) · [Descargar la skill en ZIP](https://javier321jg.github.io/cursor-build-animation/cursor-build-animation.zip)
+**[Abrir el demo interactivo](https://javier321jg.github.io/cursor-build-animation/)** · [Ver el HTML del demo](https://github.com/javier321jg/cursor-build-animation/blob/main/docs/index.html) · [Descargar la skill en ZIP](https://javier321jg.github.io/cursor-build-animation/cursor-build-animation.zip)
 
 En el demo puedes cambiar el número de cursores, ajustar la velocidad y activar las trayectorias. Pulsa **Espacio** para pausar o reproducir, **R** para reiniciar y **← / →** para retroceder o avanzar un segundo.
 
@@ -18,6 +18,7 @@ Clona el repositorio o descarga y descomprime el ZIP. Copia la carpeta `cursor-b
 | --- | --- |
 | Claude Code | `.claude/skills/cursor-build-animation/` |
 | Codex | `.agents/skills/cursor-build-animation/` |
+| Gemini CLI / Antigravity | `.gemini/skills/cursor-build-animation/` |
 
 La carpeta instalada debe contener [`SKILL.md`](SKILL.md), `runtime/`, `scripts/`, `templates/` y `examples/`.
 
@@ -51,6 +52,20 @@ node scripts/render.js animacion.html --fps 30 --mp4 animacion.mp4
 ```
 
 La exportación a MP4 requiere `ffmpeg` en el PATH. El demo incluido funciona como un HTML autónomo en el navegador.
+
+## Seguridad
+
+La skill no hace llamadas de red ni usa credenciales. `build.py` solo lee la interfaz y escribe el HTML de salida; `render.js` abre ese HTML en un Chromium local y, si se pide, ejecuta `ffmpeg` con argumentos fijos. El detalle está en [`SKILL.md`](SKILL.md#seguridad-y-privacidad).
+
+## Publicar una versión nueva
+
+Desde la raíz del repositorio (este paso no forma parte de la skill):
+
+```bash
+python tools/package_skill.py
+```
+
+El script valida el frontmatter de `SKILL.md` y genera `dist/cursor-build-animation.zip` con una sola carpeta `cursor-build-animation/` y `SKILL.md` en su raíz, sin archivos ocultos, enlaces simbólicos ni binarios. Es el formato que piden Agensi y Claude. También actualiza `docs/cursor-build-animation.zip`, el que descarga el demo.
 
 ## Licencia
 
