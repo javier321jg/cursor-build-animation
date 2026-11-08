@@ -4,6 +4,8 @@
  *   node scripts/render.js animacion.html --out frames --fps 30 [--mp4 salida.mp4] [--stills 0,4,8,12]
  *
  * Requiere: playwright (npm i playwright && npx playwright install chromium) y, para MP4, ffmpeg.
+ * Este script no instala nada ni hace llamadas de red: abre el HTML local en Chromium sin interfaz,
+ * guarda PNG en --out y, solo con --mp4, ejecuta ffmpeg con argumentos fijos (spawnSync, sin shell).
  */
 const fs = require('fs'), path = require('path'), { spawnSync } = require('child_process');
 const args = process.argv.slice(2);

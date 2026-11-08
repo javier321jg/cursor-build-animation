@@ -1,6 +1,6 @@
 ---
 name: cursor-build-animation
-description: Convierte un dashboard o pantalla HTML en una animación de cursores colaborativos (estilo Figma) que arman la interfaz pieza por pieza, con 5 fases, cámara, contadores y gráficos que se dibujan. Úsalo para "animación de cursores", "dashboard que se arma solo", demos o heros animados de una UI, y para exportar el resultado a MP4.
+description: Turns an HTML dashboard, landing page or app screen into a Figma-style collaborative-cursor build animation (1920x1080, one self-contained HTML file, optional MP4) in which 4 to 12 named cursors drag selection frames, drop cards, draw charts and count up numbers until the full UI is revealed. Use when the user asks to "animate my dashboard with cursors", "make a UI that builds itself", "create a multi-cursor or collaborative cursor animation", "turn this screen into an animated hero or product demo", or "export the UI build animation to MP4". Also in Spanish, "animación de cursores colaborativos", "dashboard que se arma solo", "anima esta interfaz con cursores".
 ---
 
 # Cursor Build Animation
@@ -15,6 +15,12 @@ Todo es HTML/CSS/JS sin dependencias, en un solo archivo, y se puede capturar fo
 - Tiene un dashboard, landing o pantalla en HTML (o quieres crear uno) y la quiere animada.
 
 No lo uses para animar una página interactiva ya publicada (esto reconstruye la UI desde cero, no graba una web viva), ni para animaciones de datos reales en tiempo real.
+
+## Requisitos y compatibilidad
+
+- **Construir la animación:** Python 3.8 o superior, sin paquetes externos. En Windows usa `python` si `python3` no existe.
+- **Fotogramas PNG y MP4 (opcional):** Node.js 18+, el paquete `playwright` con Chromium y, para MP4, `ffmpeg` en el PATH. No instales nada sin pedir permiso al usuario. Si faltan, revisa los fotogramas en el navegador del agente (paso 4).
+- **Agentes:** funciona en cualquier agente que lea `SKILL.md` y pueda ejecutar Python: Claude Code, Codex, Gemini CLI / Antigravity, Cursor. Las rutas de los comandos son relativas a la carpeta de la skill.
 
 ## Flujo
 
@@ -31,8 +37,18 @@ No lo uses para animar una página interactiva ya publicada (esto reconstruye la
    ```bash
    node scripts/render.js animacion.html --out frames --stills 1,3,5,7,9,11,13
    ```
+   Sin Playwright, abre el HTML en el navegador del agente con `?hud=0&t=3`, `?hud=0&t=7` y `?hud=0&t=99` (el último salta al final) y toma una captura de cada uno; `t` pausa la animación en ese segundo.
    Mira al menos t=3 (estructura), t=7 (ensamblaje) y el último (revelación). Comprueba lo de la lista de verificación de abajo.
 5. **Entregar** el `.html`. Si piden video: `node scripts/render.js animacion.html --fps 30 --mp4 animacion.mp4` (requiere `playwright` y `ffmpeg`).
+
+## Formato de entrega
+
+Responde al usuario con:
+
+1. La ruta del `.html` generado y cómo abrirlo (doble clic o navegador; teclas `Espacio`, `R`, `←`/`→`).
+2. Número de cursores, piezas anotadas y duración aproximada (los imprime `build.py`).
+3. Los fotogramas revisados (rutas o capturas) y una línea por cada punto de la lista de verificación que se cumple o no.
+4. La ruta del MP4, solo si lo pidieron.
 
 ## Vocabulario de atributos
 
@@ -92,6 +108,14 @@ API: `__cb.seek(t)` es determinista (la usa `render.js`), además de `play()`, `
 - **Fuentes web:** el runtime vuelve a medir al cargarlas y a los 600 ms. Para grabar con `render.js` ya espera 800 ms.
 - **Capturas:** un `<body>` con fondo propio no se hereda; usa `--stage-bg` para igualar el color del lienzo.
 - **Demasiadas piezas:** más de ~150 piezas ralentiza el dibujo; anota solo lo visible y agrupa listas largas en una sola pieza `rise`.
+
+## Seguridad y privacidad
+
+- La skill no hace llamadas de red, no pide credenciales ni claves de API y no lee variables de entorno.
+- `scripts/build.py` solo lee el archivo `--ui` y `runtime/cursor-build.js`, y escribe el archivo `--out`.
+- `scripts/render.js` abre el HTML local en Chromium sin interfaz, guarda PNG en `--out` y, si se pide MP4, ejecuta `ffmpeg` con argumentos fijos (sin shell).
+- `runtime/cursor-build.js` solo modifica el DOM de la página donde se monta: no usa cookies, almacenamiento ni `fetch`.
+- Las fuentes o estilos externos que aparezcan en la animación vienen del HTML del usuario, no de la skill.
 
 ## Archivos
 
