@@ -51,7 +51,9 @@ node scripts/render.js animacion.html --out frames --stills 3,7,14
 node scripts/render.js animacion.html --fps 30 --mp4 animacion.mp4
 ```
 
-La exportación a MP4 requiere `ffmpeg` en el PATH. El demo incluido funciona como un HTML autónomo en el navegador.
+Si ya tienes Chrome o Edge, añade `--channel chrome` o `--channel msedge` y omite `npx playwright install chromium`. La exportación a MP4 requiere `ffmpeg` en el PATH. El demo incluido funciona como un HTML autónomo en el navegador.
+
+Antes de capturar, `render.js` comprueba que las cajas, manijas y cursores caigan sobre los elementos reales y falla si el desfase supera 2 px. Sin Playwright, abre la animación con `?check=1` para ver el mismo resultado en pantalla.
 
 ## Seguridad
 

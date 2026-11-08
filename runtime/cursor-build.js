@@ -31,7 +31,7 @@
     count: 8, speed: 1, loop: true, paths: false, labels: true, cameraMotion: true,
     autoplay: true, hud: true, lang: 'es', query: true,
     names: NAMES, colors: COLORS, phases: null,
-    background: '#05070B', stageBackground: '#080A0F', grid: true
+    background: '#05070B', stageBackground: '#080A0F', grid: true, check: false
   };
 
   // ───────── utilidades ─────────
@@ -115,6 +115,7 @@
     this.state = { playing: !!o.autoplay, speed: o.speed, count: o.count, loop: !!o.loop, paths: !!o.paths, phase: 0 };
     this.t = o.t0 || 0; this.E = []; this.counters = []; this.cur = []; this.L = 10; this.END = 14;
     this.CAM = [[0, 1, this.W / 2, this.Hh / 2]];
+    this.cam = { s: 1, tx: 0, ty: 0 };   // cámara actual: lo que se dibuja en el canvas usa la misma transformación que la UI
     this.build(ui);
   }
 
@@ -129,6 +130,7 @@
       if (q.get('labels') === '0') o.labels = false;
       if (q.get('lang')) o.lang = q.get('lang');
       if (q.has('t')) { o.t0 = num('t'); o.autoplay = false; }
+      if (q.get('check') === '1') o.check = true;
     } catch (e) { /* sin query */ }
   }
 
@@ -160,8 +162,24 @@
     };
     window.addEventListener('keydown', this.onKey);
     this.resize();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { self.measure(); });
+    // Volver a medir cuando cambie el layout (fuentes web, imágenes, estilos tardíos). measure() solo
+    // replanifica si alguna pieza se movió de verdad, así que estas llamadas extra son baratas.
+    this.remeasure = function () { clearTimeout(self.mt); self.mt = setTimeout(function () { self.measure(); }, 120); };
+    if (document.fonts) {
+      if (document.fonts.ready) document.fonts.ready.then(this.remeasure);
+      if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', this.remeasure);
+    }
+    if (document.readyState !== 'complete') window.addEventListener('load', this.remeasure);
+    if (global.ResizeObserver) {
+      this.ro = new ResizeObserver(this.remeasure);
+      this.ro.observe(ui);
+      this.E.forEach(function (e) { if (!(e.n instanceof SVGElement)) self.ro.observe(e.n); });
+    }
     setTimeout(function () { self.measure(); }, 600);
+    if (o.check) {   // ?check=1 → autoprueba de alineación cuando la página ya se asentó
+      var runCheck = function () { setTimeout(function () { self.showCheck(self.selfTest()); }, 900); };
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(runCheck); else runCheck();
+    }
     this.last = performance.now();
     var tick = function (now) {
       self.raf = requestAnimationFrame(tick);
@@ -171,9 +189,12 @@
   };
 
   P.destroy = function () {
-    cancelAnimationFrame(this.raf);
+    cancelAnimationFrame(this.raf); clearTimeout(this.mt);
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('load', this.remeasure);
+    if (document.fonts && document.fonts.removeEventListener) document.fonts.removeEventListener('loadingdone', this.remeasure);
+    if (this.ro) this.ro.disconnect();
   };
 
   P.buildHUD = function () {
@@ -220,6 +241,14 @@
     });
   };
 
+  // Origen de transformación que necesita cada tipo: las barras crecen desde la base y el progreso desde la izquierda.
+  var ORIGIN = { bar: '50% 100%', prog: '0 50%', slide: '50% 50%', rise: '50% 50%', pop: '50% 50%' };
+  function isCenterOrigin(cs, n) {
+    var o = (cs.transformOrigin || '').split(' ').map(parseFloat);
+    return Math.abs(o[0] - n.offsetWidth / 2) < 0.6 && Math.abs(o[1] - n.offsetHeight / 2) < 0.6;
+  }
+  function fmt(c, v) { return c.pre + v.toLocaleString('en-US', { minimumFractionDigits: c.dec, maximumFractionDigits: c.dec }) + c.suf; }
+
   P.collect = function () {
     var world = this.world, nodes = [].slice.call(world.querySelectorAll('[data-b]')), idx = new Map();
     this.E = nodes.map(function (n, i) {
@@ -228,27 +257,56 @@
       var par = n.parentElement && n.parentElement.closest('[data-b]'), k = n.getAttribute('data-k') || 'pop';
       if (k === 'line') { n.setAttribute('pathLength', '1'); n.style.strokeDasharray = '1'; }
       if (k === 'arc') n.setAttribute('pathLength', '100');
+      // Preparar la pieza para que las transformaciones del motor se vean como se miden:
+      var cs = getComputedStyle(n), svg = n instanceof SVGElement, base = '';
+      if (BOXK[k] || k === 'bar' || k === 'prog') {
+        base = cs.transform && cs.transform !== 'none' ? cs.transform : '';   // transform propio: se combina, no se pisa
+        var pureT = !base || /^matrix\(1, 0, 0, 1, /.test(base);
+        if (!svg && cs.display === 'inline') n.style.display = 'inline-block';   // un elemento inline ignora transform
+        if (pureT && !n.style.transformOrigin) {
+          if (svg) { n.style.transformBox = 'fill-box'; n.style.transformOrigin = ORIGIN[k]; }
+          else if ((k === 'bar' || k === 'prog') && isCenterOrigin(cs, n)) n.style.transformOrigin = ORIGIN[k];
+        }
+        if (!pureT) console.warn('cursor-build: la pieza', n, 'tiene rotación o escala propia; envuélvela en otro elemento si se deforma.');
+      }
       return { n: n, k: k, s: g('s', 1 + i * 0.1), ax: g('ax', 0), ay: g('ay', 0), at: g('at', 0), sel: n.hasAttribute('data-sel'), len: g('len', 0),
-        parent: par ? idx.get(par) : -1, tag: n.tagName.toLowerCase(), ox: 0, oy: 0, x: 0, y: 0, rw: 0, rh: 0, lt: null, lo: null };
+        parent: par ? idx.get(par) : -1, tag: n.tagName.toLowerCase(), base: base, ox: 0, oy: 0, x: 0, y: 0, rw: 0, rh: 0, lt: null, lo: null };
     });
     this.counters = [].slice.call(world.querySelectorAll('[data-count]')).map(function (n) {
       var own = n.closest('[data-b]');
-      return { n: n, to: parseFloat(n.getAttribute('data-count')), dec: +n.getAttribute('data-dec') || 0, pre: n.getAttribute('data-pre') || '', suf: n.getAttribute('data-suf') || '',
+      var c = { n: n, to: parseFloat(n.getAttribute('data-count')), dec: +n.getAttribute('data-dec') || 0, pre: n.getAttribute('data-pre') || '', suf: n.getAttribute('data-suf') || '',
         owner: own ? idx.get(own) : -1, cs0: parseFloat(n.getAttribute('data-cs')) || 0, cs: 0, last: '' };
+      c.fin = fmt(c, c.to);
+      // Cifras de ancho fijo y caja de bloque en línea: el contador reserva el ancho de su valor final
+      // (se fija en measure) y no empuja a sus vecinos mientras sube.
+      n.style.fontVariantNumeric = 'tabular-nums';
+      if (getComputedStyle(n).display === 'inline') n.style.display = 'inline-block';
+      return c;
     });
   };
 
+  // Mide cada pieza en coordenadas del lienzo 1920×1080 tal como queda al FINAL (sin transformaciones del
+  // motor y con los contadores en su valor final). Solo replanifica si alguna pieza cambió de sitio o tamaño.
   P.measure = function () {
     var world = this.world, W = this.W; if (!this.E.length) this.collect();
+    if (!this.E.length) return;
     var prev = world.style.transform; world.style.transform = 'none';
-    this.E.forEach(function (e) { e.n.style.transform = ''; e.lt = null; });
-    var b = world.getBoundingClientRect(), sc = b.width / W || 1;
+    this.E.forEach(function (e) { e.n.style.transform = e.base; e.lt = null; });
+    var b = world.getBoundingClientRect(), sc = b.width / W || 1, moved = !this.measured;
+    this.counters.forEach(function (c) {
+      c.n.style.minWidth = ''; c.n.textContent = c.fin; c.last = '';
+      var cs = getComputedStyle(c.n), w = c.n.getBoundingClientRect().width / sc;
+      if (cs.boxSizing !== 'border-box') w -= parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+      c.n.style.minWidth = Math.ceil(w + 0.5) + 'px';
+    });
     this.E.forEach(function (e) {
-      var r = e.n.getBoundingClientRect();
-      e.x = (r.left - b.left) / sc; e.y = (r.top - b.top) / sc; e.rw = r.width / sc; e.rh = r.height / sc;
+      var r = e.n.getBoundingClientRect(), x = (r.left - b.left) / sc, y = (r.top - b.top) / sc, w = r.width / sc, h = r.height / sc;
+      if (Math.abs(x - e.x) > 0.5 || Math.abs(y - e.y) > 0.5 || Math.abs(w - e.rw) > 0.5 || Math.abs(h - e.rh) > 0.5) moved = true;
+      e.x = x; e.y = y; e.rw = w; e.rh = h;
     });
     world.style.transform = prev;
-    this.schedule();
+    this.measured = true;
+    if (moved) this.schedule(); else this.draw(this.t);
   };
 
   // Reparte las piezas entre los cursores: cada pieza la toma el cursor que llegue antes.
@@ -349,13 +407,14 @@
       var Pn = e.parent >= 0 ? E[e.parent] : null;
       e.ox = dx + (Pn ? Pn.ox : 0); e.oy = dy + (Pn ? Pn.oy : 0);
       if (BOXK[e.k]) tr = 'translate3d(' + dx.toFixed(2) + 'px,' + dy.toFixed(2) + 'px,0) scale(' + sc.toFixed(4) + ')';
+      if (tr !== null && e.base) tr = e.base + ' ' + tr;
       if (tr !== null && tr !== e.lt) { st.transform = tr; e.lt = tr; }
       var o = op.toFixed(3); if (o !== e.lo) { st.opacity = o; e.lo = o; }
     }
     var L = this.L;
     this.counters.forEach(function (c) {
       var v = c.to * (0.62 * eOut(cl((t - c.cs) / 1.2)) + 0.38 * eIO(cl((t - L - 0.4) / 1.8)));
-      var s = c.pre + v.toLocaleString('en-US', { minimumFractionDigits: c.dec, maximumFractionDigits: c.dec }) + c.suf;
+      var s = fmt(c, v);
       if (s !== c.last) { c.n.textContent = s; c.last = s; }
     });
   };
@@ -369,8 +428,13 @@
     }
     var tx = W / 2 - cx * s, ty = Hh / 2 - cy * s;
     if (s >= 1) { tx = Math.min(0, Math.max(W - W * s, tx)); ty = Math.min(0, Math.max(Hh - Hh * s, ty)); }
-    this.world.style.transform = 'translate3d(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px,0) scale(' + s.toFixed(4) + ')';
+    // Se guardan los mismos valores redondeados que recibe el DOM: el canvas los usa para alinear cajas y cursores.
+    var c = this.cam; c.s = +s.toFixed(4); c.tx = +tx.toFixed(2); c.ty = +ty.toFixed(2);
+    this.world.style.transform = 'translate3d(' + c.tx + 'px,' + c.ty + 'px,0) scale(' + c.s + ')';
   };
+  // Coordenadas del lienzo (las de la UI medida) → coordenadas en pantalla del escenario, con la cámara aplicada.
+  P.sx = function (x) { return this.cam.tx + this.cam.s * x; };
+  P.sy = function (y) { return this.cam.ty + this.cam.s * y; };
 
   P.cursorAt = function (c, t) {
     var S = c.segs, sg = null, i;
@@ -401,15 +465,17 @@
     }
     ctx.setTransform(k, 0, 0, k, 0, 0); ctx.clearRect(0, 0, W, Hh);
     this.drawOverlays(ctx, t);
-    var Ps = this.cur.map(function (c) { return self.cursorAt(c, t); });
+    // Los cursores se planifican en coordenadas del lienzo; aquí pasan por la cámara (su tamaño no cambia).
+    var Ps = this.cur.map(function (c) { var p = self.cursorAt(c, t); p.x = self.sx(p.x); p.y = self.sy(p.y); return p; });
     if (this.state.paths) {
       ctx.setLineDash([4, 5]); ctx.lineWidth = 1.2;
       this.cur.forEach(function (c, i) {
         var p = Ps[i]; if (!p.a) return;
         var nx = c.segs.find(function (s) { return s.t1 > t && !s.exit; }); if (!nx) return;
+        var nX = self.sx(nx.x1), nY = self.sy(nx.y1);
         ctx.globalAlpha = 0.55; ctx.strokeStyle = colors[c.col];
-        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(nx.x1, nx.y1); ctx.stroke();
-        ctx.beginPath(); ctx.arc(nx.x1, nx.y1, 3, 0, 6.283); ctx.fillStyle = colors[c.col]; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(nX, nY); ctx.stroke();
+        ctx.beginPath(); ctx.arc(nX, nY, 3, 0, 6.283); ctx.fillStyle = colors[c.col]; ctx.fill();
       });
       ctx.setLineDash([]);
     }
@@ -426,7 +492,7 @@
         [[s.t0, s.x0, s.y0], [s.t1, s.x1, s.y1]].forEach(function (z) {
           var ag = t - z[0]; if (ag < 0 || ag > 0.45) return;
           var q = ag / 0.45; ctx.globalAlpha = (1 - q) * 0.7 * p.a; ctx.strokeStyle = colors[c.col]; ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.arc(z[1], z[2], 3 + 18 * eOut(q), 0, 6.283); ctx.stroke();
+          ctx.beginPath(); ctx.arc(self.sx(z[1]), self.sy(z[2]), 3 + 18 * eOut(q), 0, 6.283); ctx.stroke();
         });
       });
     });
@@ -464,28 +530,70 @@
   };
 
   // Rectángulo de selección que crece mientras el cursor arrastra, manijas al soltar y tag de coordenadas al ajustar.
+  // Todo se calcula en coordenadas del lienzo (las cifras de las etiquetas son las del diseño) y se dibuja
+  // pasando por la cámara con sx/sy, para que caiga exactamente sobre el elemento que la UI muestra.
   P.drawOverlays = function (ctx, t) {
-    var self = this, colors = this.o.colors, cl01 = cl;
+    var self = this, colors = this.o.colors, cl01 = cl, s = this.cam.s;
     ctx.font = '500 10px ui-monospace, Menlo, monospace'; ctx.textBaseline = 'middle';
     this.E.forEach(function (e) {
       if (e.ds != null && t >= e.ds && t < e.rel) {
-        var col = colors[e.cc % colors.length], q = eIO((t - e.ds) / (e.rel - e.ds)), w = e.rw * q, h = e.rh * q;
-        ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(76,141,255,.10)'; ctx.fillRect(e.bx, e.by, w, h);
-        ctx.strokeStyle = col; ctx.lineWidth = 1.3; ctx.strokeRect(e.bx, e.by, w, h);
-        self.tag(ctx, e.bx, e.by, (e.tag === 'div' || e.tag === 'span' ? 'Frame' : e.tag) + ' ' + Math.round(w) + ' × ' + Math.round(h), col);
+        var col = colors[e.cc % colors.length], q = eIO((t - e.ds) / (e.rel - e.ds)), w = e.rw * q, h = e.rh * q, X = self.sx(e.bx), Y = self.sy(e.by);
+        ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(76,141,255,.10)'; ctx.fillRect(X, Y, w * s, h * s);
+        ctx.strokeStyle = col; ctx.lineWidth = 1.3; ctx.strokeRect(X, Y, w * s, h * s);
+        self.tag(ctx, X, Y, (e.tag === 'div' || e.tag === 'span' ? 'Frame' : e.tag) + ' ' + Math.round(w) + ' × ' + Math.round(h), col);
       } else if (e.ds != null && t >= e.rel && t < e.rel + 0.7) {
         var col2 = colors[e.cc % colors.length], a = 1 - cl01((t - e.rel - 0.35) / 0.35), x = e.x + e.ox, y = e.y + e.oy;
-        ctx.globalAlpha = a; self.handles(ctx, x, y, e.rw, e.rh, col2);
-        if (e.sel || e.rw * e.rh > 20000) self.guides(ctx, x, y, e.rw, Math.sin(cl01((t - e.rel) / 0.6) * Math.PI) * a);
+        ctx.globalAlpha = a; self.handles(ctx, self.sx(x), self.sy(y), e.rw * s, e.rh * s, col2);
+        if (e.sel || e.rw * e.rh > 20000) self.guides(ctx, self.sx(x), self.sy(y), e.rw * s, Math.sin(cl01((t - e.rel) / 0.6) * Math.PI) * a);
       }
       if (e.at2 != null && t >= e.at2 - 0.1 && t < e.at2 + e.atd + 0.5) {
         var col3 = colors[e.ac % colors.length], a2 = 1 - cl01((t - e.at2 - e.atd - 0.2) / 0.3), x2 = e.x + e.ox, y2 = e.y + e.oy;
-        ctx.globalAlpha = a2; self.handles(ctx, x2, y2, e.rw, e.rh, col3);
-        ctx.globalAlpha = a2; self.tag(ctx, x2, y2, 'x ' + Math.round(x2) + '  y ' + Math.round(y2), col3);
-        self.guides(ctx, e.x, e.y, e.rw, Math.sin(cl01((t - e.at2) / (e.atd + 0.3)) * Math.PI) * a2);
+        ctx.globalAlpha = a2; self.handles(ctx, self.sx(x2), self.sy(y2), e.rw * s, e.rh * s, col3);
+        ctx.globalAlpha = a2; self.tag(ctx, self.sx(x2), self.sy(y2), 'x ' + Math.round(x2) + '  y ' + Math.round(y2), col3);
+        self.guides(ctx, self.sx(e.x), self.sy(e.y), e.rw * s, Math.sin(cl01((t - e.at2) / (e.atd + 0.3)) * Math.PI) * a2);
       }
     });
     ctx.globalAlpha = 1;
+  };
+
+  // ───────── autoprueba ─────────
+  // Recorre varios instantes y compara, para cada caja ya asentada, el centro y el ancho que muestra el DOM con
+  // lo que dibuja el canvas. Con la UI bien medida el desfase es < 1 px. Devuelve un informe; no cambia la animación.
+  P.selfTest = function (times) {
+    var self = this, t0 = this.t, playing = this.state.playing, W = this.W, Hh = this.Hh, L = this.L;
+    this.state.playing = false;
+    times = times || [L * 0.3, L * 0.5, L * 0.7, L * 0.9, L + 0.2, this.END];
+    var max = 0, worst = null, checked = 0, issues = [], warnings = [];
+    function label(e) { return e.tag + (e.n.className && e.n.className.baseVal == null ? '.' + String(e.n.className).trim().split(/\s+/).join('.') : ''); }
+    times.forEach(function (t) {
+      self.seek(t);
+      var st = self.stage.getBoundingClientRect(), fit = st.width / W || 1, s = self.cam.s;
+      self.E.forEach(function (e) {
+        if (!BOXK[e.k] || e.ds == null || t < e.rel + 0.4 || e.rw < 1 || e.rh < 1) return;   // solo cajas ya asentadas
+        var r = e.n.getBoundingClientRect();
+        var cx = st.left + fit * self.sx(e.x + e.ox + e.rw / 2), cy = st.top + fit * self.sy(e.y + e.oy + e.rh / 2);
+        var off = Math.hypot((r.left + r.width / 2 - cx) / fit, (r.top + r.height / 2 - cy) / fit), dw = Math.abs(r.width / fit - e.rw * s);
+        checked++;
+        if (off > max) { max = off; worst = { piece: label(e), t: +t.toFixed(2), offsetPx: +off.toFixed(1) }; }
+        if ((off > 2 || dw > 2) && issues.length < 20) issues.push(label(e) + ' en t=' + t.toFixed(1) + ': desfase ' + off.toFixed(1) + ' px, ancho ' + dw.toFixed(1) + ' px');
+      });
+    });
+    this.E.forEach(function (e) {
+      if (warnings.length >= 20) return;
+      if (e.rw < 1 || e.rh < 1) warnings.push(label(e) + ': sin tamaño visible');
+      else if (e.x < -1 || e.y < -1 || e.x + e.rw > W + 1 || e.y + e.rh > Hh + 1) warnings.push(label(e) + ': se sale del lienzo 1920×1080');
+    });
+    this.t = t0; this.state.playing = playing; this.draw(this.t);
+    return { ok: issues.length === 0, pieces: this.E.length, checked: checked, maxOffsetPx: +max.toFixed(2), worst: worst,
+      duration: +this.END.toFixed(2), issues: issues, warnings: warnings };
+  };
+
+  P.showCheck = function (r) {
+    global.__cbCheck = r;
+    (r.ok ? console.info : console.warn)('cursor-build check ' + (r.ok ? 'OK' : 'FALLÓ') + ' ' + JSON.stringify(r));
+    var b = el('div', '', 'position:absolute;left:12px;top:12px;z-index:9;padding:6px 10px;border-radius:8px;font:600 12px ui-monospace,Menlo,monospace;color:#fff;background:' + (r.ok ? '#16794C' : '#B42318'));
+    b.textContent = (r.ok ? 'check OK' : 'check FALLÓ') + ' · desfase máx ' + r.maxOffsetPx + ' px · ' + r.checked + ' cajas' + (r.warnings.length ? ' · ' + r.warnings.length + ' avisos' : '');
+    b.className = 'cb-check'; this.root.appendChild(b);
   };
 
   // ───────── control ─────────
